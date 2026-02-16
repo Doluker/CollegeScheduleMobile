@@ -6,10 +6,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,7 +30,7 @@ import com.example.collegeschedulemobile.utils.getWeekDateRange
 import kotlinx.coroutines.launch
 
 @Composable
-fun ScheduleScreen() {
+fun FavouriteScreen() {
     var schedule by remember { mutableStateOf<List<ScheduleByDateDto>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -40,26 +39,15 @@ fun ScheduleScreen() {
     var selectedGroup by remember { mutableStateOf("") }
 
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val favoritesManager = remember { FavoritesManager(context) }
     val favorites by favoritesManager.favorites.collectAsState(initial = emptySet())
-    LaunchedEffect(Unit)
-    {
-        try
-        {
-            groups = RetrofitInstance.api.getGroups()
-            if (groups.isNotEmpty())
-            {
-                selectedGroup = groups[0]
-            }
-        }
-        catch (e:Exception)
-        {
-            error = "Не удалось загрузить список групп: ${e.message}"
-        }
+
+    if (selectedGroup.isEmpty() && favorites.isNotEmpty()) {
+        selectedGroup = favorites.first()
     }
+
     LaunchedEffect(selectedGroup) {
-        if (selectedGroup.isEmpty()) return@LaunchedEffect
+        if (selectedGroup.isEmpty() || !favorites.contains(selectedGroup)) return@LaunchedEffect
         loading = true
         val (start, end) = getWeekDateRange()
         try {
@@ -75,24 +63,14 @@ fun ScheduleScreen() {
         }
     }
     Column {
-        Row(verticalAlignment = Alignment.CenterVertically)
+        groups = favorites.toList()
+        if (groups.isNotEmpty())
         {
-            Box(modifier = Modifier.weight(1f)){
-                GroupDropDown(
-                    groups = groups,
-                    selectedGroup = selectedGroup,
-                    onGroupSelected = { selectedGroup = it }
-                )
-            }
-            IconButton(onClick = {
-                scope.launch { favoritesManager.toggleFavorite(selectedGroup) }
-            }) {
-                Icon(
-                    imageVector = if (favorites.contains(selectedGroup)) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = null,
-                    tint = Color(255,0,0)
-                )
-            }
+            GroupDropDown(
+                groups = groups,
+                selectedGroup = selectedGroup,
+                onGroupSelected = { selectedGroup = it }
+            )
         }
         when
         {

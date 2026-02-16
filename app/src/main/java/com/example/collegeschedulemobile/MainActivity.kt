@@ -29,6 +29,7 @@ import com.example.collegeschedulemobile.ui.theme.CollegeScheduleMobileTheme
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import androidx.compose.material3.NavigationBarItem
+import com.example.collegeschedulemobile.ui.schedule.FavouriteScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,7 +74,7 @@ fun CollegeScheduleApp() {
         androidx.compose.foundation.layout.Box(modifier = Modifier.padding(innerPadding)) {
             when (currentDestination) {
                 AppDestinations.HOME -> ScheduleScreen()
-                AppDestinations.FAVORITES -> Text("Избранное")
+                AppDestinations.FAVORITES -> FavouriteScreen()
                 AppDestinations.PROFILE -> Text("Профиль")
             }
         }
