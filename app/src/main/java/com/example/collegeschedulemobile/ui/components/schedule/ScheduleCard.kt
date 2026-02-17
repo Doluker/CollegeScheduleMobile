@@ -12,12 +12,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.collegeschedulemobile.data.dto.LessonDto
+import com.example.collegeschedulemobile.data.dto.LessonGroupPart
+import com.example.collegeschedulemobile.data.dto.LessonPartDto
 import com.example.collegeschedulemobile.ui.theme.cardBackground
 import com.example.collegeschedulemobile.ui.theme.mainRed
 
 @Composable
 fun ScheduleCard(item: LessonDto) {
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -33,7 +34,6 @@ fun ScheduleCard(item: LessonDto) {
                 .fillMaxWidth()
         )
         {
-            val info = item.groupParts.values.filterNotNull().firstOrNull()
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -47,45 +47,85 @@ fun ScheduleCard(item: LessonDto) {
                 verticalAlignment = Alignment.CenterVertically
             )
             {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    val timeParts = item.time.split('-')
-                    val startTime = timeParts.getOrNull(0) ?: "??:??"
-                    val endTime = timeParts.getOrNull(1) ?: "??:??"
-                    Text(
-                        text = startTime,
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = endTime,
-                        color = Color.Gray,
-                        fontSize = 12.sp
-                    )
-                }
+                TimeBlock(item.time)
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f))
                 {
-                    Text(
-                        text = info?.subject.toString(),
-                        color = mainRed,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = info?.teacher.toString(),
-                        color = Color.LightGray,
-                        fontSize = 14.sp
-                    )
-                    Text(
-                        text = "Ауд. ${info?.classroom} (${info?.building})",
-                        color = Color.Gray,
-                        fontSize = 12.sp
-                    )
+                    val parts = item.groupParts.filterValues { it != null }
+                    parts.entries.forEachIndexed { index, entry ->
+                        val partType = entry.key
+                        val info = entry.value!!
+                        LessonInfoBlock(
+                            info = info,
+                            partLabel = when (partType)
+                            {
+                                LessonGroupPart.SUB1 -> "1 подгруппа"
+                                LessonGroupPart.SUB2 -> "2 подгруппа"
+                                else -> null
+                            }
+                        )
+                        if (index < parts.size - 1)
+                        {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                color = Color.DarkGray,
+                                thickness = 0.5.dp
+                            )
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun TimeBlock(time: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        val timeParts = time.split('-')
+        Text(
+            text = timeParts.getOrNull(0) ?: "??:??",
+            color = Color.White,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = timeParts.getOrNull(1) ?: "??:??",
+            color = Color.Gray,
+            fontSize = 12.sp
+        )
+    }
+}
+
+@Composable
+fun LessonInfoBlock(info: LessonPartDto, partLabel: String?) {
+    Column {
+        if (partLabel != null) {
+            Text(
+                text = partLabel,
+                color = Color.Gray,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 2.dp)
+            )
+        }
+        Text(
+            text = info.subject,
+            color = mainRed,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = info.teacher,
+            color = Color.LightGray,
+            fontSize = 14.sp
+        )
+        Text(
+            text = "Ауд. ${info.classroom} (${info.building})",
+            color = Color.Gray,
+            fontSize = 12.sp
+        )
     }
 }
